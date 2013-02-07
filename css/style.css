@@ -1,0 +1,21 @@
+.entry {
+	clear: both;
+	float: left;
+	width: 600px;
+	margin-bottom: 5px;
+}
+.entry .label {
+	clear: both;
+	float: left;
+	width: 200px;
+}
+.entry .value {
+	width: 300px;
+	float: left;
+}
+br {
+	clear: both;
+}
+.content .error {
+	color: red;	
+}
