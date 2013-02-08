@@ -1,6 +1,6 @@
 <?php
 /**
- * Payments
+ * Class Payments
  * 
  * DD Web Developer technical test.
  * Process and validate data from post value.
@@ -27,9 +27,9 @@ Class Payments
 	 */
 	public function Process()
 	{
-		$order_no = '';
-		$amount = 0.0;
-		$name = '';
+		$order_no = self::getOrderNo();
+		$amount = self::getAmount();
+		$name = self::getName();
 		$output = '';
 		$ln = "\n";
 		
@@ -44,22 +44,22 @@ Class Payments
 			$name = $_POST['name'];
 		}
 		
-		//validate data
+		//collection and validate data
 		$result = self::isValidData($order_no, $amount, $name);
 		
 		$output.= '<div class="content">';
 		$output.= '<div class="title"><h1>Payment Result</h1></title>';
 		
-		if ($result == '') {
+		if ($result == '') { //validdata case
 			$output.= '<div class="entry"><div class="label">Order No:</div>';
-			$output.= '<div class="value">'.$this->getOrderNo().'</div></div>'.$ln;
+			$output.= '<div class="value">'.self::getOrderNo().'</div></div>'.$ln;
 			$output.= '<div class="entry"><div class="label">Amount:</div>';
-			$output.= '<div class="value">'.$this->getAmount().'</div></div>'.$ln;
+			$output.= '<div class="value">'.self::getAmount().'</div></div>'.$ln;
 			$output.= '<div class="entry"><div class="label">Order No:</div>';
-			$output.= '<div class="value">'.$this->getName().'</div></div>'.$ln;
+			$output.= '<div class="value">'.self::getName().'</div></div>'.$ln;
 				
-		} else {
-			$output.= '<div class="error">'.$result.'</div>'.$ln;	
+		} else {	//invaliddata case
+			$output.= $result;	
 		}
 		$output.= '</div>'.$ln;
 		$output.= '<br />';
@@ -69,7 +69,7 @@ Class Payments
 	}
 	
 	/**
-	 * Validate Data Input
+	 * Set and Validate Input Data
 	 * @param String $order_no
 	 * @param numeric $amount
 	 * @param String $name
@@ -80,22 +80,28 @@ Class Payments
 		self::setOrderNo($order_no);
 		self::setAmount($amount);
 		self::setName($name);
+		
+		$error = '';
 		//Test valid Order number
 		if (self::getOrderNo() == '') {
-			return 'invalid order number';
+			$error.= self::getErrorStr('Invalid order number: Please field Order number in "DD0000" format Ex. DD0001');
 		}
 		//Test valid Amount
 		if (self::getAmount() > 100.0) {
-			return 'Amount more than 100';
+			$error.= self::getErrorStr('Invalid amount: Amount should not more than 100.');
 		}
 		if (self::getAmount() <= 0.0) {
-			return 'Invalid amount';
+			$error.= self::getErrorStr('Invalid amount: Amount should more than 0.');
 		}
 		//Test valid Name
 		if (self::getName() == '') {
-			return 'Invalid Name';
+			if (strpos($name, ' ') === false) {
+				$error.= self::getErrorStr('Invalid name: required first and last name.');
+			} else {
+				$error.= self::getErrorStr('Invalid name: please field name in english.');
+			}
 		}
-		return '';
+		return $error;
 	}
 	/**
 	 * Filter and Set Order number
@@ -103,8 +109,10 @@ Class Payments
 	 */
 	public function setOrderNo($order_no)
 	{
+		//filter data
 		$tmp_order_no = trim(strip_tags($order_no));
 		if ($tmp_order_no != $order_no) return false;
+		//collection data
 		if (preg_match('/^DD(?P<orderid>\d{4})$/', $order_no, $matches)) {
 			if (isset($matches['orderid']) && (int)$matches['orderid'] > 0) {
 				$this->order_no = $order_no;
@@ -127,6 +135,7 @@ Class Payments
 	public function setAmount($amount)
 	{
 		if (!is_numeric($amount)) return false;
+		//collection data
 		if ((float)$amount > 0.0) $this->amount = $amount;
 	}
 	
@@ -144,8 +153,10 @@ Class Payments
 	 */
 	public function setName($name)
 	{
+		//filter data
 		$tmp_name = trim(strip_tags($name));
 		if ($tmp_name != $name) return false;
+		//collection data
 		if (preg_match('/^(?P<firstname>[[:alpha:]]+)([[:space:]]+)(?P<lastname>[[:alpha:]]+)/', $name, $matches)) {
 			$this->name = $name;
 		}
@@ -157,5 +168,13 @@ Class Payments
 	public function getName()
 	{
 		return $this->name;
+	}
+	/**
+	 * get Error string format
+	 * @param String $error
+	 */
+	public function getErrorStr($error)
+	{
+		if ($error != '') return '<div class="error">'.$error.'</div>';
 	}
 }
