@@ -17,5 +17,6 @@ br {
 	clear: both;
 }
 .content .error {
-	color: red;	
+	color: red;
+	font-weight: bold;	
 }
